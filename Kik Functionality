@@ -1,0 +1,55 @@
+std::string CopyClipboardToString()
+{
+	std::string Message;
+
+	if (OpenClipboard(NULL))
+	{
+		HANDLE ClipBoard = GetClipboardData(CF_TEXT);
+
+		if (!ClipBoard)
+		{
+			CloseClipboard();
+			return Message;
+		}
+
+		Message = (char*)ClipBoard;
+		CloseClipboard();
+	}
+
+	return Message;
+}
+
+void CopyStringtoClipboard(const std::string & s)
+{
+	OpenClipboard(NULL);
+	EmptyClipboard();
+
+	HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, s.size());
+
+	if (!hg)
+	{
+		CloseClipboard();
+		return;
+	}
+
+	memcpy(GlobalLock(hg), s.c_str(), s.size());
+	GlobalUnlock(hg);
+	SetClipboardData(CF_TEXT, hg);
+	CloseClipboard();
+	GlobalFree(hg);
+}
+
+void ClickOnce()
+{
+	mouse_event(MOUSEEVENTF_LEFTDOWN, NULL, NULL, NULL, NULL);
+	mouse_event(MOUSEEVENTF_LEFTUP, NULL, NULL, NULL, NULL);
+}
+
+void Paste()
+{	
+	const UINT VK_V = 0x56; 
+	keybd_event(VK_LCONTROL, MapVirtualKey(VK_LCONTROL, MAPVK_VK_TO_VSC), NULL, NULL);
+	keybd_event(VK_V, MapVirtualKey(VK_V, MAPVK_VK_TO_VSC), NULL, NULL);
+	keybd_event(VK_V, MapVirtualKey(VK_V, MAPVK_VK_TO_VSC), KEYEVENTF_KEYUP, NULL);
+	keybd_event(VK_LCONTROL, MapVirtualKey(VK_LCONTROL, MAPVK_VK_TO_VSC), KEYEVENTF_KEYUP, NULL);
+}
